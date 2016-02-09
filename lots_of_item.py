@@ -25,7 +25,7 @@ User1 = User(name="Robo Barista", email="tinnyTim@udacity.com",
 session.add(User1)
 session.commit()
 
-# Menu for UrbanBurger
+
 college = Catagory(name="College",
                    photo="http://images.clipartpanda.com/college-clip-art-college-clip-art-5.png")
 
@@ -57,5 +57,17 @@ laptop = Item(user_id=1, name="laptop", description="a laptop to use in the coll
 session.add(laptop)
 session.commit()
 
+
+soccer = Catagory(name="Soccer",
+                   photo="http://images.clipartpanda.com/soccer-clip-art-7iaRR5jiA.gif")
+
+session.add(soccer)
+session.commit()
+
+basketball = Catagory(name="Basketball",
+                   photo="http://images.clipartpanda.com/basketball-20clip-20art-basketball-hoop-clipart-5-280x288.34688346883.jpg")
+
+session.add(basketball)
+session.commit()
 
 print "added all items!"

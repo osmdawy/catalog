@@ -1,0 +1,28 @@
+{% include "header.html" %}
+<div class = "container">
+<form method = "post">
+  <fieldset class="form-group">
+    <label for="name">Item name</label>
+    <input type="text" class="form-control" name="item-name" placeholder="{{item.name}}">
+  </fieldset>
+  <fieldset class="form-group">
+    <label for="description">Description</label>
+    <input type="text" class="form-control" name="description" placeholder="{{item.description}}">
+  </fieldset>
+  <fieldset class="form-group">
+    <label for="catagorySelect">Catagory</label>
+    <select class="form-control" name="item-catagory">
+    {% for catagory in catagories %}
+      <option>{{catagory.name}}</option>
+    {% endfor %}
+    </select>
+  </fieldset>
+  <fieldset class="form-group">
+    <label for="pictureUpload">Upload a photo</label>
+    <input type="file" class="form-control-file" id="item_photo">
+    <small class="text-muted">choose a photo to upload with the item.</small>
+  </fieldset>
+  
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+</div>
