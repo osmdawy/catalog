@@ -17,7 +17,7 @@ DBSession = sessionmaker(bind=engine)
 # revert all of them back to the last commit by calling
 # session.rollback()
 session = DBSession()
-photo_url = "https://www.lg.com/us/content/img/support/img-dummy-product.jpg"
+photo_url = "images/favicon.ico"
 
 # Create dummy user
 User1 = User(name="Robo Barista", email="tinnyTim@udacity.com",
@@ -31,30 +31,35 @@ college = Category(name="College")
 session.add(college)
 session.commit()
 
-books = Item( name="Books", description="Non-fiction books for the college.", 
-             category=college, photo = photo_url)
+# books = Item()
+# books.name = "Books"
+# books.description = "Non-fiction books for the college."
+# books.category = college
 
-session.add(books)
-session.commit()
+# # books = Item( name="Books", description="Non-fiction books for the college.", 
+# #              category=college, picture = open(photo_url))
+
+# session.add(books)
+# session.commit()
 
 
-pens = Item(name="Pens", description="new pens for the college", 
-                    category=college, photo = photo_url)
+# pens = Item(name="Pens", description="new pens for the college", 
+#                     category=college, picture = from_file(photo_url))
 
-session.add(pens)
-session.commit()
+# session.add(pens)
+# session.commit()
 
-backpack = Item(name="backpack", description="A backpack to carry my books and laptop", 
-                    category=college, photo = photo_url)
+# backpack = Item(name="backpack", description="A backpack to carry my books and laptop", 
+#                     category=college, picture = from_file(photo_url) )
 
-session.add(backpack)
-session.commit()
+# session.add(backpack)
+# session.commit()
 
-laptop = Item(name="laptop", description="a laptop to use in the college", 
-                   category=college, photo = photo_url)
+# laptop = Item(name="laptop", description="a laptop to use in the college", 
+#                    category=college, picture = from_file(photo_url))
 
-session.add(laptop)
-session.commit()
+# session.add(laptop)
+# session.commit()
 
 
 soccer = Category(name="Soccer")
