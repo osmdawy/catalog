@@ -6,7 +6,8 @@ from datetime import datetime
 # for image uploading
 from sqlalchemy import Unicode
 from sqlalchemy_imageattach.entity import Image, image_attachment
-
+# for xml
+from dicttoxml import dicttoxml
 Base = declarative_base()
 
 

@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+from flask import Flask, render_template, request
+from flask import redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Category, Base, Item, User
@@ -16,7 +17,8 @@ from urllib import urlopen
 # for images uploading
 from sqlalchemy_imageattach.stores.fs import HttpExposedFileSystemStore
 from sqlalchemy_imageattach.context import store_context
-
+# for xml
+from dicttoxml import dicttoxml
 
 app = Flask(__name__)
 
@@ -35,6 +37,8 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME = "Item Catalog"
 
 # Create anti-forgery state token
+
+
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -42,6 +46,11 @@ def showLogin():
     login_session['state'] = state
     # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
+
+# For connecting to G+ and create new user I used a code
+# from udacity authentication and authorization course
+
+# Connect using G+
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -95,8 +104,9 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+                                json.dumps('Current user is already connected.')
+                                , 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -129,41 +139,45 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ''' " style = "width: 300px; height: 300px;border-radius:
+                    150px;-webkit-border-radius: 150px;
+                    -moz-border-radius: 150px;"> '''
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
 
-    # DISCONNECT - Revoke a current user's token and reset their login_session
+# DISCONNECT - Revoke a current user's token and reset their login_session
 
 
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session['access_token']
     print 'In gdisconnect access token is %s', access_token
-    print 'User name is: ' 
+    print 'User name is: '
     print login_session['username']
     if access_token is None:
-      print 'Access Token is None'
-      response = make_response(json.dumps('Current user not connected.'), 401)
-      response.headers['Content-Type'] = 'application/json'
-      return response
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+        print 'Access Token is None'
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session[
+        'access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
     print result
     if result['status'] == '200':
-      del login_session['access_token'] 
-      del login_session['gplus_id']
-      del login_session['username']
-      del login_session['email']
-      del login_session['picture']
-      response = 'Successfully disconnected.'
-      return render_template('logout.html', response= response)
+        del login_session['access_token']
+        del login_session['gplus_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        response = 'Successfully disconnected.'
+        return render_template('logout.html', response=response)
     else:
-      response = 'Failed to revoke token for given user.'
-      return render_template('logout.html', response= response)
+        response = 'Failed to revoke token for given user.'
+        return render_template('logout.html', response=response)
 
 # User Helper Functions
 
@@ -195,109 +209,165 @@ def getUserID(email):
 @app.route('/categories/')
 def showCategories():
 
-  users = session.query(User).order_by(asc(User.email))
-  categories = session.query(Category).order_by(asc(Category.name))
-  
-  latest_items = session.query(Item).order_by(Item.created_at.desc()).limit(6)
-  # if 'username' not in login_session:
-  #     return render_template('publicrestaurants.html', restaurants=restaurants)
-  # else:
-  return render_template('index.html', categories=categories,items= latest_items, display_category = '',
-    login_session = login_session)
+    users = session.query(User).order_by(asc(User.email))
+    categories = session.query(Category).order_by(asc(Category.name))
+    latest_items = session.query(Item).order_by(
+        Item.created_at.desc()).limit(6)
+    return render_template('index.html', categories=categories,
+                           items=latest_items, display_category='',
+                           login_session=login_session)
 
-#show items for specific category
+# show items for specific category
+
+
 @app.route('/category/<int:category_id>/items')
 def showItems(category_id):
-  categories = session.query(Category).order_by(asc(Category.name))
-  category_name = session.query(Category).get(category_id).name
-  items = session.query(Item).filter_by(category_id = category_id).order_by(asc(Item.name))
-  return render_template('index.html', categories= categories,items= items, display_category = category_name,
-    login_session = login_session)
+    categories = session.query(Category).order_by(asc(Category.name))
+    category_name = session.query(Category).get(category_id).name
+    items = session.query(Item).filter_by(
+        category_id=category_id).order_by(asc(Item.name))
+    return render_template('index.html', categories=categories, items=items,
+                           display_category=category_name,
+                           login_session=login_session)
+
+# show one item data
+
 
 @app.route('/items/<int:item_id>')
 def showItem(item_id):
-  item = session.query(Item).get(item_id)
-  with store_context(fs_store):
-    picture_url = item.picture.locate()
-  return render_template('item.html', item = item, login_session = login_session, picture_url = picture_url)
+    item = session.query(Item).get(item_id)
+    with store_context(fs_store):
+        picture_url = item.picture.locate()
+    return render_template('item.html', item=item, login_session=login_session
+                           , picture_url=picture_url)
 
 
 # Create a new item
 @app.route('/items/create/', methods=['GET', 'POST'])
 def createItem():
-  if 'username' not in login_session:
-    return redirect(url_for('showLogin'))
-  if request.method == 'POST':
-    category = session.query(Category).filter_by(name = request.form['item-category']).first()
-    newItem = Item()
-    newItem.name = request.form['item-name']
-    newItem.description = request.form['description']
-    newItem.category = category
+    if 'username' not in login_session:
+        return redirect(url_for('showLogin'))
+    if request.method == 'POST':
+        category = session.query(Category).filter_by(
+            name=request.form['item-category']).first()
+        newItem = Item()
+        newItem.name = request.form['item-name']
+        newItem.description = request.form['description']
+        newItem.category = category
 
-    try:
-        with store_context(fs_store):
-            newItem.picture.from_file(request.files['item_photo'])
-            session.add(newItem)
-            session.commit()
-    except Exception:
-        session.rollback()
-        raise
-    return redirect(url_for('showCategories'))
-  else:
-    categories = session.query(Category).order_by(asc(Category.name))
-    return render_template('create_item.html',categories = categories, login_session = login_session)
+        try:
+            with store_context(fs_store):
+                newItem.picture.from_file(request.files['item_photo'])
+                session.add(newItem)
+                session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        return redirect(url_for('showCategories'))
+    else:
+        categories = session.query(Category).order_by(asc(Category.name))
+        return render_template('create_item.html', categories=categories,
+                               login_session=login_session)
 
 # Edit an exisiting item
+
+
 @app.route('/items/<int:item_id>/edit', methods=['GET', 'POST'])
 def editItem(item_id):
-  if 'username' not in login_session:
-    return redirect(url_for('showLogin'))
-  item = session.query(Item).get(item_id)
-  if request.method == 'POST':
-    if request.form['item-name']:
-      item.name = request.form['item-name']
-    if request.form['description']:
-      item.description = request.form['description']
-    if request.files['item_photo']:
-      try:
-        with store_context(fs_store):
-            item.picture.from_file(request.files['item_photo'])
-            session.commit()
-      except Exception:
-        session.rollback()
-        raise
-    return redirect(url_for('showCategories'))
-  else:
-    categories = session.query(Category).order_by(asc(Category.name))
-    return render_template('edititem.html',categories = categories, item = item, login_session = login_session)
+    if 'username' not in login_session:
+        return redirect(url_for('showLogin'))
+    item = session.query(Item).get(item_id)
+    if request.method == 'POST':
+        if request.form['item-name']:
+            item.name = request.form['item-name']
+        if request.form['description']:
+            item.description = request.form['description']
+        if request.files['item_photo']:
+            try:
+                with store_context(fs_store):
+                    item.picture.from_file(request.files['item_photo'])
+                    session.commit()
+            except Exception:
+                session.rollback()
+                raise
+        return redirect(url_for('showCategories'))
+    else:
+        categories = session.query(Category).order_by(asc(Category.name))
+        return render_template('edititem.html', categories=categories,
+                               item=item, login_session=login_session)
 
 # delete an existing item
-@app.route('/items/<int:item_id>/delete', methods= ['GET','POST'])
+
+
+@app.route('/items/<int:item_id>/delete', methods=['GET', 'POST'])
 def deleteItem(item_id):
-  if 'username' not in login_session:
-    return redirect(url_for('showLogin'))
-  deletedItem = session.query(Item).get(item_id)
-  if request.method == 'POST':
-    with store_context(fs_store):
-        session.delete(deletedItem)
-        session.commit()
-    return redirect(url_for('showCategories'))
-  else:
-    return render_template("deleteItem.html",item = deletedItem, login_session = login_session)
+    if 'username' not in login_session:
+        return redirect(url_for('showLogin'))
+    deletedItem = session.query(Item).get(item_id)
+    if request.method == 'POST':
+        with store_context(fs_store):
+            session.delete(deletedItem)
+            session.commit()
+        return redirect(url_for('showCategories'))
+    else:
+        return render_template("deleteItem.html",
+                               item=deletedItem, login_session=login_session)
 
-# image uploading
-# def set_picture(request, item_id):
-#     try:
-#         item = session.query(Item).get(int(item_id))
-#         with store_context(fs_store):
-#             item.picture.from_file(request.files['picture'])
-#     except Exception:
-#         session.rollback()
-#         raise
-#     session.commit()
+# helper methods for json and xml end points
 
+
+def convertCategoriesToDict():
+    categories = session.query(Category).order_by(asc(Category.name))
+    categoriesDict = [i.serialize for i in categories]
+    return categoriesDict
+
+
+def convertItemsToDict(category_id):
+    items = session.query(Item).filter_by(
+        category_id=category_id).order_by(asc(Item.name))
+    itemsDict = [i.serialize for i in items]
+    return itemsDict
+
+
+# JSON end points
+
+@app.route('/categories/JSON')
+def showCategoriesJSON():
+    return jsonify(Categories=convertCategoriesToDict())
+
+
+@app.route('/category/<int:category_id>/items/JSON')
+def showItemsJSON(category_id):
+    return jsonify(Items=convertItemsToDict(category_id))
+
+
+@app.route('/items/<int:item_id>/JSON')
+def showItemJSON(item_id):
+    item = session.query(Item).get(item_id)
+    return jsonify(Item=item.serialize)
+
+# XML end points
+
+
+@app.route('/categories/XML')
+def showCategoriesXML():
+    categoriesXML = dicttoxml(convertCategoriesToDict())
+    return app.response_class(categoriesXML, mimetype='application/xml')
+
+
+@app.route('/category/<int:category_id>/items/XML')
+def showItemsXML(category_id):
+    itemsXML = dicttoxml(convertItemsToDict(category_id))
+    return app.response_class(itemsXML, mimetype='application/xml')
+
+
+@app.route('/items/<int:item_id>/XML')
+def showItemXML(item_id):
+    item = session.query(Item).get(item_id)
+    itemXML = dicttoxml(item.serialize)
+    return app.response_class(itemXML, mimetype='application/xml')
 
 if __name__ == '__main__':
-  app.secret_key = 'super_secret_key'
-  app.debug = True
+    app.secret_key = 'super_secret_key'
+    app.debug = True
 app.run(host='0.0.0.0', port=8000)
