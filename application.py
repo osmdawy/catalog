@@ -152,13 +152,11 @@ def gdisconnect():
       del login_session['username']
       del login_session['email']
       del login_session['picture']
-      response = make_response(json.dumps('Successfully disconnected.'), 200)
-      response.headers['Content-Type'] = 'application/json'
-      return response
+      response = 'Successfully disconnected.'
+      return render_template('logout.html', response= response)
     else:
-      response = make_response(json.dumps('Failed to revoke token for given user.', 400))
-      response.headers['Content-Type'] = 'application/json'
-      return response
+      response = 'Failed to revoke token for given user.'
+      return render_template('logout.html', response= response)
 
 # User Helper Functions
 

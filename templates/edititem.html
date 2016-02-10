@@ -3,17 +3,21 @@
 <form method = "post">
   <fieldset class="form-group">
     <label for="name">Item name</label>
-    <input type="text" class="form-control" name="item-name" placeholder="{{item.name}}">
+    <input type="text" class="form-control" name="item-name" value="{{item.name}}">
   </fieldset>
   <fieldset class="form-group">
     <label for="description">Description</label>
-    <input type="text" class="form-control" name="description" placeholder="{{item.description}}">
+    <input type="text" class="form-control" name="description" value="{{item.description}}">
   </fieldset>
   <fieldset class="form-group">
     <label for="catagorySelect">Catagory</label>
     <select class="form-control" name="item-catagory">
     {% for catagory in catagories %}
-      <option>{{catagory.name}}</option>
+      {% if catagory.name == item.catagory.name %}
+        <option selected = "selected">{{catagory.name}}</option>
+      {% else %}
+        <option>{{catagory.name}}</option>
+      {% endif %}
     {% endfor %}
     </select>
   </fieldset>

@@ -10,26 +10,25 @@
 
 
 </head>
-
+{% include "header.html" %}
 
 <body>  
+  <div class="container">
+    <!-- GOOGLE PLUS SIGN IN-->
+    <div id="signInButton">
+      <span class="g-signin"
+        data-scope="openid email"
+        data-clientid="314376724037-qvfgfi04sg2evi2ug5v93h0bidj8qojd.apps.googleusercontent.com"
+        data-redirecturi="postmessage"
+        data-accesstype="offline"
+        data-cookiepolicy="single_host_origin"
+        data-callback="signInCallback"
+        data-approvalprompt="force">
+      </span>
+    </div>
 
-<!-- GOOGLE PLUS SIGN IN-->
-
-          
-          <div id="signInButton">
-          <span class="g-signin"
-            data-scope="openid email"
-            data-clientid="314376724037-qvfgfi04sg2evi2ug5v93h0bidj8qojd.apps.googleusercontent.com"
-            data-redirecturi="postmessage"
-            data-accesstype="offline"
-            data-cookiepolicy="single_host_origin"
-            data-callback="signInCallback"
-            data-approvalprompt="force">
-          </span>
-        </div>
-
-<div id="result"></div>
+    <div id="result"></div>
+  </div>
 
 <script>
 function signInCallback(authResult) {

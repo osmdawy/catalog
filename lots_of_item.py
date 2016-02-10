@@ -26,8 +26,7 @@ session.add(User1)
 session.commit()
 
 
-college = Catagory(name="College",
-                   photo="http://images.clipartpanda.com/college-clip-art-college-clip-art-5.png")
+college = Catagory(name="College")
 
 session.add(college)
 session.commit()
@@ -58,14 +57,12 @@ session.add(laptop)
 session.commit()
 
 
-soccer = Catagory(name="Soccer",
-                   photo="http://images.clipartpanda.com/soccer-clip-art-7iaRR5jiA.gif")
+soccer = Catagory(name="Soccer")
 
 session.add(soccer)
 session.commit()
 
-basketball = Catagory(name="Basketball",
-                   photo="http://images.clipartpanda.com/basketball-20clip-20art-basketball-hoop-clipart-5-280x288.34688346883.jpg")
+basketball = Catagory(name="Basketball")
 
 session.add(basketball)
 session.commit()
