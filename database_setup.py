@@ -15,12 +15,11 @@ class User(Base):
   email = Column(String(600), nullable=False)
   photo = Column(String(600), nullable=False)
 
-class Catagory(Base):
-    __tablename__ = 'catagory'
+class Category(Base):
+    __tablename__ = 'category'
    
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
-    photo = Column(String(600), nullable=False)
 
     @property
     def serialize(self):
@@ -28,7 +27,6 @@ class Catagory(Base):
        return {
            'name'         : self.name,
            'id'           : self.id,
-           'photo_url'    : self.photo,
        }
  
 class Item(Base):
@@ -38,11 +36,10 @@ class Item(Base):
     name =Column(String(250), nullable = False)
     id = Column(Integer, primary_key = True)
     description = Column(String(250))
+    photo = Column(String(600), nullable=False)
     created_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
-    catagory_id = Column(Integer,ForeignKey('catagory.id'))
-    catagory = relationship(Catagory)
-    user_id = Column(Integer,ForeignKey('user.id'))
-    user = relationship(User)
+    category_id = Column(Integer,ForeignKey('category.id'))
+    category = relationship(Category)
 
     @property
     def serialize(self):
@@ -51,8 +48,8 @@ class Item(Base):
            'name'         : self.name,
            'description'         : self.description,
            'id'         : self.id,
-           'catagory_id' : self.catagory_id,
-           'creator_id'   : self.user_id,
+           'category_id' : self.category_id,
+           'photo_url'  : photo,
        }
 
 

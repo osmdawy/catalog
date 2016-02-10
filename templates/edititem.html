@@ -10,13 +10,13 @@
     <input type="text" class="form-control" name="description" value="{{item.description}}">
   </fieldset>
   <fieldset class="form-group">
-    <label for="catagorySelect">Catagory</label>
-    <select class="form-control" name="item-catagory">
-    {% for catagory in catagories %}
-      {% if catagory.name == item.catagory.name %}
-        <option selected = "selected">{{catagory.name}}</option>
+    <label for="categorySelect">Category</label>
+    <select class="form-control" name="item-category">
+    {% for category in categories %}
+      {% if category.name == item.category.name %}
+        <option selected = "selected">{{category.name}}</option>
       {% else %}
-        <option>{{catagory.name}}</option>
+        <option>{{category.name}}</option>
       {% endif %}
     {% endfor %}
     </select>

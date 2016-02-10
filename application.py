@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Catagory, Base, Item, User
+from database_setup import Category, Base, Item, User
 from flask import session as login_session
 import random
 import string
@@ -183,27 +183,27 @@ def getUserID(email):
         return None
 
 
-# Show all catagories
+# Show all categories
 @app.route('/')
-@app.route('/catagories/')
-def showCatagories():
+@app.route('/categories/')
+def showCategories():
   users = session.query(User).order_by(asc(User.email))
-  catagories = session.query(Catagory).order_by(asc(Catagory.name))
+  categories = session.query(Category).order_by(asc(Category.name))
   
   latest_items = session.query(Item).order_by(Item.created_at.desc()).limit(6)
   # if 'username' not in login_session:
   #     return render_template('publicrestaurants.html', restaurants=restaurants)
   # else:
-  return render_template('index.html', catagories=catagories,items= latest_items, display_catagory = '',
+  return render_template('index.html', categories=categories,items= latest_items, display_category = '',
     login_session = login_session)
 
-#show items for specific catagory
-@app.route('/catagory/<int:catagory_id>/items')
-def showItems(catagory_id):
-  catagories = session.query(Catagory).order_by(asc(Catagory.name))
-  catagory_name = session.query(Catagory).get(catagory_id).name
-  items = session.query(Item).filter_by(catagory_id = catagory_id).order_by(asc(Item.name))
-  return render_template('index.html', catagories= catagories,items= items, display_catagory = catagory_name,
+#show items for specific category
+@app.route('/category/<int:category_id>/items')
+def showItems(category_id):
+  categories = session.query(Category).order_by(asc(Category.name))
+  category_name = session.query(Category).get(category_id).name
+  items = session.query(Item).filter_by(category_id = category_id).order_by(asc(Item.name))
+  return render_template('index.html', categories= categories,items= items, display_category = category_name,
     login_session = login_session)
 
 @app.route('/items/<int:item_id>')
@@ -218,14 +218,14 @@ def createItem():
   if 'username' not in login_session:
     return redirect(url_for('showLogin'))
   if request.method == 'POST':
-    catagory = session.query(Catagory).filter_by(name = request.form['item-catagory']).first()
-    newItem = Item(name = request.form['item-name'],description = request.form['description'], catagory = catagory)
+    category = session.query(Category).filter_by(name = request.form['item-category']).first()
+    newItem = Item(name = request.form['item-name'],description = request.form['description'], category = category)
     session.add(newItem)
     session.commit()
-    return redirect(url_for('showCatagories'))
+    return redirect(url_for('showCategories'))
   else:
-    catagories = session.query(Catagory).order_by(asc(Catagory.name))
-    return render_template('create_item.html',catagories = catagories, login_session = login_session)
+    categories = session.query(Category).order_by(asc(Category.name))
+    return render_template('create_item.html',categories = categories, login_session = login_session)
 
 # Edit an exisiting item
 @app.route('/items/<int:item_id>/edit', methods=['GET', 'POST'])
@@ -238,10 +238,10 @@ def editItem(item_id):
       item.name = request.form['item-name']
     if request.form['description']:
       item.description = request.form['description']
-    return redirect(url_for('showCatagories'))
+    return redirect(url_for('showCategories'))
   else:
-    catagories = session.query(Catagory).order_by(asc(Catagory.name))
-    return render_template('edititem.html',catagories = catagories, item = item, login_session = login_session)
+    categories = session.query(Category).order_by(asc(Category.name))
+    return render_template('edititem.html',categories = categories, item = item, login_session = login_session)
 
 # delete an existing item
 @app.route('/items/<int:item_id>/delete', methods= ['GET','POST'])
@@ -252,7 +252,7 @@ def deleteItem(item_id):
   if request.method == 'POST':
     session.delete(deletedItem)
     session.commit()
-    return redirect(url_for('showCatagories'))
+    return redirect(url_for('showCategories'))
   else:
     return render_template("deleteItem.html",item = deletedItem, login_session = login_session)
 

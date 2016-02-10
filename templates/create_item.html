@@ -10,10 +10,10 @@
     <input type="text" class="form-control" name="description" placeholder="Enter description for item">
   </fieldset>
   <fieldset class="form-group">
-    <label for="catagorySelect">Catagory</label>
-    <select class="form-control" name="item-catagory">
-    {% for catagory in catagories %}
-      <option>{{catagory.name}}</option>
+    <label for="categorySelect">Category</label>
+    <select class="form-control" name="item-category">
+    {% for category in categories %}
+      <option>{{category.name}}</option>
     {% endfor %}
     </select>
   </fieldset>

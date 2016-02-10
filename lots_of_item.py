@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-from database_setup import Catagory, Base, Item, User
+from database_setup import Category, Base, Item, User
 
 engine = create_engine('sqlite:///itemscatalog.db')
 # Bind the engine to the metadata of the Base class so that the
@@ -17,7 +17,7 @@ DBSession = sessionmaker(bind=engine)
 # revert all of them back to the last commit by calling
 # session.rollback()
 session = DBSession()
-
+photo_url = "https://www.lg.com/us/content/img/support/img-dummy-product.jpg"
 
 # Create dummy user
 User1 = User(name="Robo Barista", email="tinnyTim@udacity.com",
@@ -26,43 +26,43 @@ session.add(User1)
 session.commit()
 
 
-college = Catagory(name="College")
+college = Category(name="College")
 
 session.add(college)
 session.commit()
 
-books = Item(user_id=1, name="Books", description="Non-fiction books for the college.", 
-             catagory=college)
+books = Item( name="Books", description="Non-fiction books for the college.", 
+             category=college, photo = photo_url)
 
 session.add(books)
 session.commit()
 
 
-pens = Item(user_id=1, name="Pens", description="new pens for the college", 
-                    catagory=college)
+pens = Item(name="Pens", description="new pens for the college", 
+                    category=college, photo = photo_url)
 
 session.add(pens)
 session.commit()
 
-backpack = Item(user_id=1, name="backpack", description="A backpack to carry my books and laptop", 
-                    catagory=college)
+backpack = Item(name="backpack", description="A backpack to carry my books and laptop", 
+                    category=college, photo = photo_url)
 
 session.add(backpack)
 session.commit()
 
-laptop = Item(user_id=1, name="laptop", description="a laptop to use in the college", 
-                   catagory=college)
+laptop = Item(name="laptop", description="a laptop to use in the college", 
+                   category=college, photo = photo_url)
 
 session.add(laptop)
 session.commit()
 
 
-soccer = Catagory(name="Soccer")
+soccer = Category(name="Soccer")
 
 session.add(soccer)
 session.commit()
 
-basketball = Catagory(name="Basketball")
+basketball = Category(name="Basketball")
 
 session.add(basketball)
 session.commit()
