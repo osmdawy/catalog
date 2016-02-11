@@ -6,8 +6,6 @@ from datetime import datetime
 # for image uploading
 from sqlalchemy import Unicode
 from sqlalchemy_imageattach.entity import Image, image_attachment
-# for xml
-from dicttoxml import dicttoxml
 Base = declarative_base()
 
 
@@ -18,6 +16,14 @@ class User(Base):
   name = Column(String(250), nullable=False)
   email = Column(String(600), nullable=False)
   photo = Column(String(600), nullable=False)
+  @property
+  def serialize(self):
+       """Return object data in easily serializeable format"""
+       return {
+           'name' : self.name,
+           'id' : self.id,
+           'email' : self.email
+       }
 
 class Category(Base):
     __tablename__ = 'category'
@@ -43,6 +49,8 @@ class Item(Base):
     created_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
     category_id = Column(Integer,ForeignKey('category.id'))
     category = relationship(Category)
+    user_id = Column(Integer,ForeignKey('user.id'))
+    user = relationship(User)
 
     @property
     def serialize(self):
@@ -53,6 +61,7 @@ class Item(Base):
            'id' : self.id,
            'category_id' : self.category_id,
            'created_at' : self.created_at,
+           'creator_id' : self.user_id,
        }
 
 class ItemPicture(Base, Image):

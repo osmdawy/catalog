@@ -1,6 +1,7 @@
 {% include "header.html" %}
 <div class = "container">
 <form action = "" method=post enctype=multipart/form-data>
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
   <fieldset class="form-group">
     <label for="name">Item name</label>
     <input type="text" class="form-control" name="item-name" placeholder="Enter item name">

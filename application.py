@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request
 from flask import redirect, jsonify, url_for, flash
+# dor preventing CSRF attack
+from flask.ext.seasurf import SeaSurf
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Category, Base, Item, User
@@ -13,14 +15,15 @@ import httplib2
 import json
 from flask import make_response
 import requests
-from urllib import urlopen
 # for images uploading
 from sqlalchemy_imageattach.stores.fs import HttpExposedFileSystemStore
 from sqlalchemy_imageattach.context import store_context
+from urllib import urlopen
 # for xml
 from dicttoxml import dicttoxml
 
 app = Flask(__name__)
+csrf = SeaSurf(app)
 
 # Connect to Database and create database session
 engine = create_engine('sqlite:///itemscatalog.db')
@@ -31,6 +34,7 @@ session = DBSession()
 # for images uploading
 fs_store = HttpExposedFileSystemStore('itemimages', 'images/')
 app.wsgi_app = fs_store.wsgi_middleware(app.wsgi_app)
+dummy_item_photo = "http://www.canadacontestsonline.com/wp-content/themes/Wordie/images/no_image.png"
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
@@ -238,8 +242,9 @@ def showItem(item_id):
     item = session.query(Item).get(item_id)
     with store_context(fs_store):
         picture_url = item.picture.locate()
+    user_id = getUserID(login_session['email'])
     return render_template('item.html', item=item, login_session=login_session
-                           , picture_url=picture_url)
+                           , picture_url=picture_url, user_id = user_id)
 
 
 # Create a new item
@@ -254,12 +259,15 @@ def createItem():
         newItem.name = request.form['item-name']
         newItem.description = request.form['description']
         newItem.category = category
-
+        newItem.user_id = getUserID(login_session['email'])
         try:
             with store_context(fs_store):
+              if request.files['item_photo']:
                 newItem.picture.from_file(request.files['item_photo'])
-                session.add(newItem)
-                session.commit()
+              else:
+                newItem.picture.from_file(urlopen(dummy_item_photo))
+              session.add(newItem)
+              session.commit()
         except Exception:
             session.rollback()
             raise
@@ -277,6 +285,12 @@ def editItem(item_id):
     if 'username' not in login_session:
         return redirect(url_for('showLogin'))
     item = session.query(Item).get(item_id)
+    user_id = getUserID(login_session['email'])
+    if item.user_id != user_id: 
+      response = make_response(
+                                json.dumps('You are not authorized to edit this item.')
+                                , 200)
+      return response
     if request.method == 'POST':
         if request.form['item-name']:
             item.name = request.form['item-name']
@@ -304,6 +318,12 @@ def deleteItem(item_id):
     if 'username' not in login_session:
         return redirect(url_for('showLogin'))
     deletedItem = session.query(Item).get(item_id)
+    user_id = getUserID(login_session['email'])
+    if deletedItem.user_id != user_id: 
+      response = make_response(
+                                json.dumps('You are not authorized to delete this item.')
+                                , 200)
+      return response
     if request.method == 'POST':
         with store_context(fs_store):
             session.delete(deletedItem)
@@ -346,6 +366,10 @@ def showItemJSON(item_id):
     item = session.query(Item).get(item_id)
     return jsonify(Item=item.serialize)
 
+@app.route('/users/JSON')
+def showUsersJSON():
+  users = session.query(User).order_by(User.name)
+  return jsonify(Users=[i.serialize for i in users])
 # XML end points
 
 

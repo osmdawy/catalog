@@ -6,7 +6,7 @@
 		  	<small>({{item.category.name}})</small>
 		  </h2>
 		  <p>{{item.description}}</p>
-		  {% if 'username' in login_session: %}
+		  {% if 'username' in login_session and user_id == item.user_id: %}
 		  	<a class="btn btn-default" href = "/items/{{item.id}}/edit">Edit</a>
 		  	<a class="btn btn-default" href = "/items/{{item.id}}/delete">Delete</a>
 	  	{% endif %}
