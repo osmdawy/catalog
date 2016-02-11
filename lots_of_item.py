@@ -21,7 +21,8 @@ photo_url = "images/favicon.ico"
 
 # Create dummy user
 User1 = User(name="Robo Barista", email="tinnyTim@udacity.com",
-             photo='https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png')
+             photo='''https://pbs.twimg.com/profile_images/2671170543/
+                      18debd694829ed78203a5a36dd364160_400x400.png''')
 session.add(User1)
 session.commit()
 
@@ -30,37 +31,6 @@ college = Category(name="College")
 
 session.add(college)
 session.commit()
-
-# books = Item()
-# books.name = "Books"
-# books.description = "Non-fiction books for the college."
-# books.category = college
-
-# # books = Item( name="Books", description="Non-fiction books for the college.", 
-# #              category=college, picture = open(photo_url))
-
-# session.add(books)
-# session.commit()
-
-
-# pens = Item(name="Pens", description="new pens for the college", 
-#                     category=college, picture = from_file(photo_url))
-
-# session.add(pens)
-# session.commit()
-
-# backpack = Item(name="backpack", description="A backpack to carry my books and laptop", 
-#                     category=college, picture = from_file(photo_url) )
-
-# session.add(backpack)
-# session.commit()
-
-# laptop = Item(name="laptop", description="a laptop to use in the college", 
-#                    category=college, picture = from_file(photo_url))
-
-# session.add(laptop)
-# session.commit()
-
 
 soccer = Category(name="Soccer")
 

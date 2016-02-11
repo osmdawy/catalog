@@ -34,7 +34,8 @@ session = DBSession()
 # for images uploading
 fs_store = HttpExposedFileSystemStore('itemimages', 'images/')
 app.wsgi_app = fs_store.wsgi_middleware(app.wsgi_app)
-dummy_item_photo = "http://www.canadacontestsonline.com/wp-content/themes/Wordie/images/no_image.png"
+dummy_item_photo = '''http://www.canadacontestsonline.com
+                      /wp-content/themes/Wordie/images/no_image.png'''
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
@@ -109,8 +110,7 @@ def gconnect():
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
         response = make_response(
-                                json.dumps('Current user is already connected.')
-                                , 200)
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -165,8 +165,8 @@ def gdisconnect():
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session[
-        'access_token']
+    url = ('https://accounts.google.com/o/oauth2/revoke?token=%s' %
+           login_session['access_token'])
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -243,8 +243,8 @@ def showItem(item_id):
     with store_context(fs_store):
         picture_url = item.picture.locate()
     user_id = getUserID(login_session['email'])
-    return render_template('item.html', item=item, login_session=login_session
-                           , picture_url=picture_url, user_id = user_id)
+    return render_template('item.html', item=item, login_session=login_session,
+                           picture_url=picture_url, user_id=user_id)
 
 
 # Create a new item
@@ -262,12 +262,12 @@ def createItem():
         newItem.user_id = getUserID(login_session['email'])
         try:
             with store_context(fs_store):
-              if request.files['item_photo']:
-                newItem.picture.from_file(request.files['item_photo'])
-              else:
-                newItem.picture.from_file(urlopen(dummy_item_photo))
-              session.add(newItem)
-              session.commit()
+                if request.files['item_photo']:
+                    newItem.picture.from_file(request.files['item_photo'])
+                else:
+                    newItem.picture.from_file(urlopen(dummy_item_photo))
+                session.add(newItem)
+                session.commit()
         except Exception:
             session.rollback()
             raise
@@ -286,11 +286,10 @@ def editItem(item_id):
         return redirect(url_for('showLogin'))
     item = session.query(Item).get(item_id)
     user_id = getUserID(login_session['email'])
-    if item.user_id != user_id: 
-      response = make_response(
-                                json.dumps('You are not authorized to edit this item.')
-                                , 200)
-      return response
+    if item.user_id != user_id:
+        response = make_response(
+            json.dumps('You are not authorized to edit this item.'), 200)
+        return response
     if request.method == 'POST':
         if request.form['item-name']:
             item.name = request.form['item-name']
@@ -319,11 +318,10 @@ def deleteItem(item_id):
         return redirect(url_for('showLogin'))
     deletedItem = session.query(Item).get(item_id)
     user_id = getUserID(login_session['email'])
-    if deletedItem.user_id != user_id: 
-      response = make_response(
-                                json.dumps('You are not authorized to delete this item.')
-                                , 200)
-      return response
+    if deletedItem.user_id != user_id:
+        response = make_response(
+            json.dumps('You are not authorized to delete this item.'), 200)
+        return response
     if request.method == 'POST':
         with store_context(fs_store):
             session.delete(deletedItem)
@@ -366,13 +364,14 @@ def showItemJSON(item_id):
     item = session.query(Item).get(item_id)
     return jsonify(Item=item.serialize)
 
+
 @app.route('/users/JSON')
 def showUsersJSON():
-  users = session.query(User).order_by(User.name)
-  return jsonify(Users=[i.serialize for i in users])
+    users = session.query(User).order_by(User.name)
+    return jsonify(Users=[i.serialize for i in users])
+
+
 # XML end points
-
-
 @app.route('/categories/XML')
 def showCategoriesXML():
     categoriesXML = dicttoxml(convertCategoriesToDict())
