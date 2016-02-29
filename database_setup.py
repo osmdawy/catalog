@@ -86,8 +86,7 @@ class ItemPicture(Base, Image):
             'object_id': self.object_id,
         }
 
-
-engine = create_engine('sqlite:///itemscatalog.db')
+engine = create_engine('postgresql://catalog:catalog@localhost/itemscatalog')
 
 
 Base.metadata.create_all(engine)

@@ -4,6 +4,7 @@ from flask import redirect, jsonify, url_for, flash
 from flask.ext.seasurf import SeaSurf
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 from database_setup import Category, Base, Item, User
 from flask import session as login_session
 import random
@@ -21,24 +22,29 @@ from sqlalchemy_imageattach.context import store_context
 from urllib import urlopen
 # for xml
 from dicttoxml import dicttoxml
+import os
+import sys
 
 app = Flask(__name__)
 csrf = SeaSurf(app)
 
 # Connect to Database and create database session
-engine = create_engine('sqlite:///itemscatalog.db')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+engine = create_engine('postgresql://catalog:catalog@localhost/itemscatalog')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
-session = DBSession()
+# session = DBSession()
+Session = scoped_session(DBSession)
+session = Session()
 # for images uploading
-fs_store = HttpExposedFileSystemStore('itemimages', 'images/')
+fs_store = HttpExposedFileSystemStore('/tmp/itemimages', 'images/')
 app.wsgi_app = fs_store.wsgi_middleware(app.wsgi_app)
 dummy_item_photo = '''http://www.canadacontestsonline.com
                       /wp-content/themes/Wordie/images/no_image.png'''
 
 CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
+    open(os.path.join(BASE_DIR, 'client_secrets.json'), 'r').read())['web']['client_id']
 APPLICATION_NAME = "Item Catalog"
 
 # Create anti-forgery state token
@@ -70,7 +76,7 @@ def gconnect():
 
     try:
         # Upgrade the authorization code into a credentials object
-        oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+        oauth_flow = flow_from_clientsecrets(os.path.join(BASE_DIR, 'client_secrets.json'), scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -212,14 +218,13 @@ def getUserID(email):
 @app.route('/')
 @app.route('/categories/')
 def showCategories():
-
+   # print >>sys.stderr, '=============show'
     users = session.query(User).order_by(asc(User.email))
+   # print >>sys.stderr, '======================   ', str(users.all()) 
     categories = session.query(Category).order_by(asc(Category.name))
-    latest_items = session.query(Item).order_by(
-        Item.created_at.desc()).limit(6)
-    return render_template('index.html', categories=categories,
-                           items=latest_items, display_category='',
-                           login_session=login_session)
+   # print >>sys.stderr, '=============show     ', str(categories.all())
+    latest_items = session.query(Item).order_by(Item.created_at.desc()).limit(6)
+    return render_template('index.html', categories=categories,items=latest_items, display_category='',login_session=login_session)
 
 # show items for specific category
 
@@ -390,7 +395,8 @@ def showItemXML(item_id):
     itemXML = dicttoxml(item.serialize)
     return app.response_class(itemXML, mimetype='application/xml')
 
+app.secret_key = 'super_secret_key'
 if __name__ == '__main__':
+   # app.debug = True
     app.secret_key = 'super_secret_key'
-    app.debug = True
-app.run(host='0.0.0.0', port=8000)
+    app.run()
